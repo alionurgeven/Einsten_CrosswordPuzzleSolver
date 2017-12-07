@@ -1,0 +1,29 @@
+import tkinter as tk
+import pygame
+
+pygame.init()
+ss = width, height = 1024, 600
+screen = pygame.display.set_mode(ss)
+tkinput_1 = True
+
+while True:
+
+    event = pygame.event.poll()
+    keys = pygame.key.get_pressed()
+
+    if event.type == pygame.QUIT:
+        pygame.quit()
+        sys.exit()
+
+    screen.fill((0,0,0))
+
+    if tkinput_1 == True:
+         tkinput_root1 = tk.Tk()
+         tkinput_root1.geometry("200x200")
+         tkinput_root1.title("How many teams?")
+         tkinput_input1 = tk.Entry(tkinput_root1)
+         tkinput_1 = False
+
+    pygame.display.update()
+
+tkinput_root1.mainloop()

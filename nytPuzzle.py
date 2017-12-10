@@ -11,6 +11,8 @@ import string
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
+import json
+import os, sys
 
 now = datetime.datetime.now()
 record = now.strftime("%d-%m-%Y")
@@ -36,7 +38,11 @@ def puzzle_spider():
     items = browser.find_elements_by_tag_name("a")
     items[18].click()
     items = browser.find_elements_by_tag_name("span")
-    items[26].click()
+    items[25].click()
+    #i = 0
+    #for el in items:
+    #    print(el.text , i)
+    #    i +
     items = browser.find_elements_by_tag_name("a")
     items[30].click()
 
@@ -80,11 +86,13 @@ def printPuzzle():
                 sys.exit();
             elif event.type is pygame.MOUSEBUTTONDOWN:
                 mouse_x, mouse_y = pygame.mouse.get_pos()
-                print  mouse_y,mouse_y
+                print(mouse_y,mouse_y)
                 if mouse_x < 700 and mouse_x > 600 and mouse_y <= 500 and mouse_y >= 450:
                     reveal()
-                if 900 >= mouse_x and mouse_x >= 800 and 500 >= mouse_y and mouse_y >= 450:
+                elif 900 >= mouse_x and mouse_x >= 800 and 500 >= mouse_y and mouse_y >= 450:
                     clear()
+                elif 1000 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 900 and 600 > pygame.mouse.get_pos()[1] and pygame.mouse.get_pos()[1] > 550:
+                    SolvePuzzle()
 
         screen = pygame.display.set_mode((1800, 1000))
         screen.fill(white);
@@ -104,6 +112,14 @@ def printPuzzle():
         smallText = pygame.font.Font("freesansbold.ttf", 20)
         text = font.render("Clear!", 1, (0, 0, 0))
         screen.blit(text, (815, 465))
+
+        if 1000 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 900 and 600 > pygame.mouse.get_pos()[1] and pygame.mouse.get_pos()[1] > 550:
+            pygame.draw.rect(screen, bright_red, (900, 550, 100, 50))
+        else:
+            pygame.draw.rect(screen, white, (900, 550, 100, 50))
+        smallText = pygame.font.Font("freesansbold.ttf", 20)
+        text = font.render("Solve!", 1, (0, 0, 0))
+        screen.blit(text, (915, 565))
 
         startx = 520
         starty = 5
@@ -297,12 +313,29 @@ def CheckMousePos(mousePositionx, mousePositiony):
         arr.append(mposy)
         return arr
 
+def SolvePuzzle():
+
+    english_words = load_words()
+    for character in string.ascii_lowercase:
+        findWord(0, character, english_words, 5)
+
+def findWord(chrIndex ,chr, words, length):
+    for word in words:
+        if word[chrIndex] == chr and word.__len__() == length:
+            print(word)
+def load_words():
+    try:
+        filename = os.path.dirname(sys.argv[0]) + "\\" + "words_dictionary.json"
+        with open(filename, "r") as english_dictionary:
+            valid_words = json.load(english_dictionary)
+            return valid_words
+    except Exception as e:
+        return str(e)
+
 Titles = []
 Clues = []
 Labels = []
 grid = Grid()
-grid2 = Grid()
-grid2 = grid
 
 black = (0, 0, 0);
 white = (255, 255, 255);
@@ -314,8 +347,8 @@ bright_red = (255,0,0)
 pygame.init()
 font = pygame.font.SysFont('C:\Windows\Fonts\Arial.ttf',30, False, False)
 
-#puzzle_spider()
-#saver()
-Loader("22-11-2017")
+puzzle_spider()
+saver()
+#Loader("22-11-2017")
 
 printPuzzle()

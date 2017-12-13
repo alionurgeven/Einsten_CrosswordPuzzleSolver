@@ -1,6 +1,6 @@
 #!python2
 import requests
-import csv, re, time, copy
+import csv, re, time, copy, stop_words
 from bs4 import BeautifulSoup
 from decimal import Decimal
 import pygame
@@ -46,7 +46,7 @@ def puzzle_spider():
     #for el in items:
     #    print(el.text, i)
     #    i += 1
-    items[26].click()
+    items[25].click()
 
     items = browser.find_elements_by_tag_name("a")
     items[30].click()
@@ -122,6 +122,7 @@ def clear():
 
 
 def printPuzzle():
+    revealed = False
     while True:
         mouse_x = None
         mouse_y = None
@@ -133,7 +134,7 @@ def printPuzzle():
                 mouse_x, mouse_y = pygame.mouse.get_pos()
                 print(mouse_y,mouse_y)
                 if mouse_x < 700 and mouse_x > 600 and mouse_y <= 500 and mouse_y >= 450:
-                    reveal()
+                    revealed = True
                 elif 900 >= mouse_x and mouse_x >= 800 and 500 >= mouse_y and mouse_y >= 450:
                     clear()
                 elif 1000 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 900 and 600 > pygame.mouse.get_pos()[1] and pygame.mouse.get_pos()[1] > 550:
@@ -165,6 +166,42 @@ def printPuzzle():
         smallText = pygame.font.Font("freesansbold.ttf", 20)
         text = font.render("Solve!", 1, (0, 0, 0))
         screen.blit(text, (915, 565))
+
+        if revealed is True:
+            smallText = pygame.font.Font("freesansbold.ttf", 20)
+            text = font.render("Revealed Puzzle!", 1, (0, 0, 0))
+            screen.blit(text, (1100, 370))
+
+            startx = 1100
+            starty = 400
+            i = 0
+            a = 0
+            nn=0
+            for element in grid.Answers:
+                tile = grid.Tiles[nn].find("rect")
+                nn+=1
+                if tile.get("fill") == "black":
+                    pygame.draw.rect(screen, black, (float(startx + a * 50), float(starty), 50, 50), 0)
+                else:
+                    pygame.draw.rect(screen, black, (float(startx + a * 50), float(starty), 50, 50), 1)
+                text = font.render(str(element), 1, (0, 0, 0))
+                screen.blit(text, (startx + a * 50+20, starty+20))
+                i += 1
+                a += 1
+                if a==5:
+                    a=0
+                    starty +=50
+            startx = 1100
+            starty = 400
+            a = 0
+            for nn in range(0, grid.Tiles.__len__(), 1):
+                for number in grid.Tiles[nn].findAll("text", {"text-anchor": "start"}):
+                    text = font.render(number.text, 1, (0, 0, 0))
+                    screen.blit(text, (float(startx + a * 50 +5), float(starty+5)))
+                a += 1
+                if a==5:
+                    a=0
+                    starty +=50
 
         startx = 520
         starty = 5
@@ -371,15 +408,15 @@ def CheckMousePos(mousePositionx, mousePositiony):
         return arr
 
 def SolvePuzzle(screen):
-    #for clue in Clues:
-    #    print(clue)
-    #    with open('clues.csv') as csvfile:
-    #        readCSV = csv.reader(csvfile, delimiter=',')
-    #        for row in readCSV:
-    #            if str(clue).replace(' ', '') == str(row[13]).replace(' ', ''):
-    #                print(row[14])
-    #        print("Finished")
-
+    '''
+    for clue in Clues:
+        print(clue)
+        with open('clues.csv') as csvfile:
+            readCSV = csv.reader(csvfile, delimiter=',')
+            for row in readCSV:
+                if str(clue).replace(' ', '') == str(row[13]).replace(' ', ''):
+                    print(row[14])
+    '''
     #english_words = load_words()
 
     """""
@@ -390,7 +427,7 @@ def SolvePuzzle(screen):
             if len(row[14]) <= 5:
                 english_words[row[14]] = 1
     print english_words
-    """
+
 
     english_words = {}
     with open('other.txt') as words:
@@ -400,7 +437,38 @@ def SolvePuzzle(screen):
                 english_words[row] = 1
     print len(english_words)
 
-    possibleAnswersToClues = [{},{},{},{},{},{},{},{},{},{}]
+    """
+    relationDegree = 0
+    gw = ['A', 'THE', 'FOR', 'WITH', 'AS', 'BY', 'THIS', 'THAT', 'OF', 'TO', 'AN', '']
+    from stop_words import get_stop_words
+
+
+    # CURRENT PROCESS: Creating word database
+    garbage_words = get_stop_words('en')
+    garbage_words = get_stop_words('english')
+    garbage_words = [str(x).upper() for x in garbage_words]
+
+    english_words = {}
+
+    # CURRENT PROCESS: DISCARDING STOP WORDS FROM DATABASE
+    with open('clues.csv') as csvfile:
+        readCSV = csv.reader(csvfile, delimiter=',')
+        # CURRENT PROCESS: GATHERING POSSIBLE WORDS FOR CREATING DICTIONARY
+        for row in readCSV:
+            if 1 < len(row[14]) <= 5 and len(row[13]) > 0:
+                for a in range(0, 10):
+                    for word in Clues[a].strip().split(' '):
+                        word = word.replace(',', '').replace('-', ' ').replace('_', '').strip().upper()
+                        foo = [x.replace(',', '').replace('-', ' ').replace('_', '').strip().upper() for x in row[13].split(' ')]
+                        if word in foo and word not in garbage_words:
+                            relationDegree += 1
+                ls = [x.replace(',', '').replace('-', ' ').replace('_', '').strip() for x in row[13].split(' ') if x not in garbage_words]
+                if len(ls) != 0:
+                    rdNormalized = float(relationDegree) / float(len(ls))
+                    if (rdNormalized) >= 0.5:
+                        english_words[row[14]] = rdNormalized
+                relationDegree = 0
+    #possibleAnswersToClues = [{},{},{},{},{},{},{},{},{},{}]
     gs = GridState()
     """"
     for i in range(0, 10, 1):
@@ -472,11 +540,23 @@ def SolvePuzzle(screen):
     #for el in string.ascii_lowercase:
     #    findWord(0, el,  english_words, len(grid.Words[7]), 7)
 
-    solution = solveRecursion(english_words, gs)
+    words_dict = {}
+    from collections import OrderedDict
+    sList = sorted(english_words.items(), key=operator.itemgetter(1), reverse= True)
+    print 'List: ', sList
+
+    words_dict = OrderedDict(sList)
+
+    print '( ', len(words_dict), ' ) Sized, Reverse sorted relative words dictionary: ', words_dict
+
+    # CURRENT PROCESS: SOLVING THE PUZZLE USING BACKTRACKING ENHACNED WITH FORWARD-CHECKING
+    solution = solveRecursion(words_dict, gs, screen)
 
     if solution is not None:
+        # CURRENT PROCESS: FOUND A VALID SOLUTION
         print solution.Words
     else:
+        # CURRENT PROCESS: COULD NOT FIND A VALID SOLUTION
         print 'Could not find a valid solution!'
 def updateGameScreenGridChars(screen):
     screen.fill(white);
@@ -500,9 +580,9 @@ def updateGameScreenGridChars(screen):
 def solvePuzzleRecursion():
     print 'done'
 
-
+import operator
 colWords = ['','','','','']
-def solveRecursion(words, gridS, level=0):
+def solveRecursion(words, gridS, screen, level=0):
     global colWords
     print 'Row Words: ', gridS.Words, 'Col Words: ', colWords
     spaceAvailable = False
@@ -516,10 +596,8 @@ def solveRecursion(words, gridS, level=0):
         else:
             return None
 
-    for word in sorted(words.keys()):
-        if gridS.fillFirst(word):
-
-
+    for word in words.keys():
+        if gridS.fillFirst(word, screen):
             blackCount = 0
             for i in range(0, 5):
                 tile = grid.Tiles[level * 5 + i].find("rect")
@@ -528,7 +606,6 @@ def solveRecursion(words, gridS, level=0):
                 else:
                     break
             for i, chr in enumerate(word):
-
                 colWords[blackCount + i] += chr
             contToRec = True
             for col in colWords:
@@ -543,7 +620,7 @@ def solveRecursion(words, gridS, level=0):
                     break
             words.pop(word, 1)
             if contToRec:
-                ret = solveRecursion(words, gridS, level+1)
+                ret = solveRecursion(words, gridS, screen, level+1)
                 if ret:
                     return ret
                 else:
@@ -555,7 +632,7 @@ def solveRecursion(words, gridS, level=0):
                 words[word] = 1
                 gridS.reverseState(word)
                 #print 'AFTER: ', gridS.Words
-            for i in range(0, 5):
+            for i in range(blackCount, 5):
                 if len(colWords[i]) != 0:
                     colWords[i] = colWords[i][:-1]
 
@@ -613,15 +690,15 @@ class GridState:
         #    for i in range(0,len(gridState[j])):
         #        if gridState[j] != grid.Words[j][i]:
         #            return False
-        print 'asfasf', self.Words, grid.Words
+        print 'FOUND SOLUTION: ', self.Words, grid.Words
         for i in range(0, 5):
             for a,b in zip(self.Words[i], grid.Words[i]):
                 if a != b:
                     return False
         return True
 
-    def fillFirst(self, word):
-
+    def fillFirst(self, word, screen):
+        b = 0
         a = 0
         for i in range(0, 5):
             if len(self.Words[i]) == 0:
@@ -633,7 +710,16 @@ class GridState:
         if len(word) == len(grid.Words[a]) and a != -1:
             self.Words[a] = word
             for i in range(0, len(word)):
-                    self.Chars[i + 5 * a] = word[i]
+                self.Chars[i + 5 * a] = word[i]
+            for j in range(0, 25, 1):
+                if grid.Answers[j] != ' ':
+                    if self.Chars[b] != '':
+                        grid.Chars[j] = self.Chars[b]
+                        #updateGameScreenGridChars(screen)
+                    b += 1
+                else:
+                    if self.Chars[b] == '':
+                        b += 1
             return True
         return False
 
@@ -642,7 +728,6 @@ class GridState:
 
     def addWord(self, word, index, screen):
 
-        print 'afasfasfasf', word, index
         if len(word) == len(grid.Words[index]):
             self.Words[index] = word
             for i in range(0, len(word)):

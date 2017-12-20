@@ -500,22 +500,18 @@ def SolvePuzzle(screen,revealed):
         addCurrentProcess(screen, revealed, "Could not find a valid solution")
 
         a = 0
-        b = 0
+        tempChars =[]
+        for k in range(0, 5):
+            if len(bestList[k]) != 0:
+                for i in range(0,len(bestList[k]),1):
+                    tempChars.append(bestList[k][i])
         for k in range(0, 25):
-            print a
-            if len(bestList[a]) == 0 or b > 24 or a > 9:
-                break
-            else:
-                grid.Chars[b] = ''
-                if grid.Answers[b] != ' ':
-                    if b % 5 < len(bestList[a]):
-                        grid.Chars[b] = bestList[a][b % 5]
-                    else:
-                        a += 1
-                        b += 4
-                else:
-                    b += 1
-            b += 1
+            grid.Chars[k] = ''
+            if grid.Answers[k] != ' ' and a < len(tempChars):
+                grid.Chars[k]=tempChars[a]
+                a+=1
+        print tempChars
+
         print 'Could not find a valid solution!'
     print "END OF REVERSED DICTIONARY"
     return
@@ -1000,5 +996,5 @@ font = pygame.font.SysFont('C:\Windows\Fonts\Arial.ttf',30, False, False)
 
 #puzzle_spider()
 #saver()
-Loader("12-12-2017")
+Loader("19-12-2017")
 printPuzzle()

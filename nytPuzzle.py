@@ -424,6 +424,7 @@ def CheckMousePos(mousePositionx, mousePositiony):
         return arr
 
 def SolvePuzzle(screen,revealed):
+    global bestGrid
     '''
     for clue in Clues:
         print(clue)
@@ -495,10 +496,26 @@ def SolvePuzzle(screen,revealed):
         print solution1.Words
     else:
         # CURRENT PROCESS: Could not find a valid solution
-        print 'BEST WORDS: ', bestGrid.Chars
-        grid.Chars = bestGrid.Chars
-        updateGameScreenGridChars(screen, revealed)
+        print 'BEST WORDS: ', bestList
         addCurrentProcess(screen, revealed, "Could not find a valid solution")
+
+        a = 0
+        b = 0
+        for k in range(0, 25):
+            print a
+            if len(bestList[a]) == 0 or b > 24 or a > 9:
+                break
+            else:
+                grid.Chars[b] = ''
+                if grid.Answers[b] != ' ':
+                    if b % 5 < len(bestList[a]):
+                        grid.Chars[b] = bestList[a][b % 5]
+                    else:
+                        a += 1
+                        b += 4
+                else:
+                    b += 1
+            b += 1
         print 'Could not find a valid solution!'
     print "END OF REVERSED DICTIONARY"
     return
@@ -767,7 +784,8 @@ def solvePuzzleRecursion():
 import operator
 colWords = ['','','','','']
 def solveRecursion(words, gridS, screen, revealed, level=0):
-    global colWords, biggestBestCount
+    global colWords, biggestBestCount, bestGrid
+    global bestList
     print 'Row Words: ', gridS.Words, 'Col Words: ', colWords
     print 'LEVEL: ' ,level
     spaceAvailable = False
@@ -781,7 +799,7 @@ def solveRecursion(words, gridS, screen, revealed, level=0):
             #updateGameScreenGridChars(screen, revealed)
             return gridS
         else:
-            print 'GRID S', bestGrid.Words, finalBestGrid.Words
+            print 'GRID S', bestGrid.Words
             return None
 
     for word in words[level].keys():
@@ -817,11 +835,12 @@ def solveRecursion(words, gridS, screen, revealed, level=0):
                     gridS.reverseState(word)
             else:
                 if bestGrid.bestCount > biggestBestCount:
-                    print 'new best found', biggestBestCount
+                    del bestList[:]
+                    print 'new best found', bestGrid.bestCount
                     biggestBestCount = bestGrid.bestCount
                     for m in range(0, 10):
-                        bestGrid.Words[i] = copy.deepcopy(gridS.Words[i])
-                    print 'GRID S2', bestGrid.Words, finalBestGrid.Words
+                        bestList.append(gridS.Words[m])
+                    print 'GRID S2', bestList
                     finalBestGrid.Words = gridS.Words
                 #print 'NONE RETURNED'
                 #print 'BEFORE: ', gridS.Words
@@ -831,8 +850,6 @@ def solveRecursion(words, gridS, screen, revealed, level=0):
             for i in range(blackCount, 5):
                 if len(colWords[i]) != 0:
                     colWords[i] = colWords[i][:-1]
-
-
     return None
 
 
@@ -965,6 +982,7 @@ Labels = []
 grid = Grid()
 
 biggestBestCount = 1
+bestList = []
 bestGrid = GridState()
 finalBestGrid = GridState()
 
@@ -982,5 +1000,5 @@ font = pygame.font.SysFont('C:\Windows\Fonts\Arial.ttf',30, False, False)
 
 #puzzle_spider()
 #saver()
-Loader("10-12-2017")
+Loader("12-12-2017")
 printPuzzle()

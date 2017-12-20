@@ -24,7 +24,7 @@ class Grid:
     Chars = []
     Answers = []
     Words = []
-    nextline=0
+    nextline=-1
     message=[]
 
     def __init__(self):
@@ -121,6 +121,7 @@ def reveal():
 def clear():
     for i in range(0, grid.Chars.__len__(), 1):
         grid.Chars[i] = ""
+    grid.nextline=-1
     grid.message= []
 
 def printHelper(screen):
@@ -270,14 +271,16 @@ def printPuzzle():
                         if (b * 5 + a + i) % 5 == 0 and (b * 5 + a) % 5 != 0:
                             break
                         findTile(stri[i], a, b, i)
+
+        if grid.nextline!= -1:
+            pygame.draw.rect(screen, (0, 0, 0), (5, (screen.get_height() / 2) + 20, 750, 40 + grid.nextline * 40), 0)
         m = 0
         fontobject = pygame.font.Font(None, 30)
         while m != len(grid.message):
             screen.blit(fontobject.render(grid.message[m], 1, (255, 255, 255)),
                         (5, (screen.get_height() / 2) + 30 + m * 40))
-            screen.blit(fontobject.render(grid.message[m], 1, (255, 255, 255)),
-                    (5, (screen.get_height() / 2) + 30 + m * 40))
             m += 1
+
         pygame.display.update()
 
 
@@ -451,6 +454,7 @@ def SolvePuzzle(screen,revealed):
     print len(english_words)
 
     """
+    addCurrentProcess(screen, revealed, "Creating word database")
     count = 0
     reversed_wrods_list = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
     insertValue = 0
@@ -472,6 +476,7 @@ def SolvePuzzle(screen,revealed):
                     reversed_wrods_list[j][str(value).upper()] = insertValue
                     print key, 'is:', value
 
+    addCurrentProcess(screen, revealed, "Discarding stop words from database")
     reversed_wrods_list[2]['METOO'] = 28933
     reversed_wrods_list[3]['PRESS'] = 23890
     reversed_wrods_list[6]['MUTES'] = 1
@@ -501,7 +506,7 @@ def SolvePuzzle(screen,revealed):
     gw = ['A', 'THE', 'FOR', 'WITH', 'AS', 'BY', 'THIS', 'THAT', 'OF', 'TO', 'AN', '']
     from stop_words import get_stop_words
 
-
+    '''
     # CURRENT PROCESS: Creating word database
     addCurrentProcess(screen, revealed, "Creating word database")
     garbage_words = get_stop_words('en')
@@ -512,7 +517,7 @@ def SolvePuzzle(screen,revealed):
     addCurrentProcess(screen, revealed, "Discarding stop words from database")
     # CURRENT PROCESS: Discarding stop words from database
     return
-    '''
+    
     with open('clues.csv') as csvfile:
         readCSV = csv.reader(csvfile, delimiter=',')
         # CURRENT PROCESS: Gathering possible words for creating dictionary
@@ -628,18 +633,17 @@ def SolvePuzzle(screen,revealed):
     '''
 
 def addCurrentProcess(screen, revealed, mes):
-
-
     if mes != "":
         screen.fill(white)
         grid.message.append(mes)
-
+        grid.nextline += 1
         pygame.display.flip()
     updateGameScreenGridChars(screen, revealed)
 
 def updateGameScreenGridChars(screen, revealed):
     screen.fill(white)
-    pygame.draw.rect(screen, (0, 0, 0), (5, (screen.get_height() / 2) + 20, 750, 40 + grid.nextline * 40), 0)
+    if grid.nextline != -1:
+        pygame.draw.rect(screen, (0, 0, 0), (5, (screen.get_height() / 2) + 20, 750, 40 + grid.nextline * 40), 0)
     m = 0
     fontobject = pygame.font.Font(None, 30)
     while m != len(grid.message):
@@ -647,7 +651,6 @@ def updateGameScreenGridChars(screen, revealed):
                     (5, (screen.get_height() / 2) + 30 + m * 40))
         m += 1
 
-    grid.nextline += 1
     if 700 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 600 and 500 > pygame.mouse.get_pos()[1] and \
                     pygame.mouse.get_pos()[1] > 450:
         pygame.draw.rect(screen, bright_green, (600, 450, 100, 50))

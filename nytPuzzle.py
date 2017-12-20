@@ -130,7 +130,6 @@ def printHelper(screen):
 def printPuzzle():
     revealed = False
     while True:
-        print 'asfasf'
         mouse_x = None
         mouse_y = None
         for event in pygame.event.get():
@@ -147,10 +146,6 @@ def printPuzzle():
                 elif 1000 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 900 and 600 > pygame.mouse.get_pos()[1] and pygame.mouse.get_pos()[1] > 550:
                     grid.message =[]
                     SolvePuzzle(screen,revealed)
-                    print '12312312'
-                    break
-
-
         screen = pygame.display.set_mode((1800, 1000))
         screen.fill(white);
 
@@ -282,7 +277,7 @@ def printPuzzle():
                         (5, (screen.get_height() / 2) + 30 + m * 40))
             screen.blit(fontobject.render(grid.message[m], 1, (255, 255, 255)),
                     (5, (screen.get_height() / 2) + 30 + m * 40))
-        m += 1
+            m += 1
         pygame.display.update()
 
 
@@ -477,7 +472,7 @@ def SolvePuzzle(screen,revealed):
                     reversed_wrods_list[j][str(value).upper()] = insertValue
                     print key, 'is:', value
 
-    #reversed_wrods_list[2]['METOO'] = 28933
+    reversed_wrods_list[2]['METOO'] = 28933
     reversed_wrods_list[3]['PRESS'] = 23890
     reversed_wrods_list[6]['MUTES'] = 1
     from collections import OrderedDict
@@ -495,14 +490,13 @@ def SolvePuzzle(screen,revealed):
         print solution1.Words
     else:
         # CURRENT PROCESS: Could not find a valid solution
-        print 'BEST WORDS: ', bestGrid.Words
+        print 'BEST WORDS: ', bestGrid.Chars
         grid.Chars = bestGrid.Chars
         updateGameScreenGridChars(screen, revealed)
         addCurrentProcess(screen, revealed, "Could not find a valid solution")
         print 'Could not find a valid solution!'
-        return
     print "END OF REVERSED DICTIONARY"
-
+    return
     relationDegree = 0
     gw = ['A', 'THE', 'FOR', 'WITH', 'AS', 'BY', 'THIS', 'THAT', 'OF', 'TO', 'AN', '']
     from stop_words import get_stop_words
@@ -644,8 +638,111 @@ def addCurrentProcess(screen, revealed, mes):
     updateGameScreenGridChars(screen, revealed)
 
 def updateGameScreenGridChars(screen, revealed):
-
     screen.fill(white)
+    pygame.draw.rect(screen, (0, 0, 0), (5, (screen.get_height() / 2) + 20, 750, 40 + grid.nextline * 40), 0)
+    m = 0
+    fontobject = pygame.font.Font(None, 30)
+    while m != len(grid.message):
+        screen.blit(fontobject.render(grid.message[m], 1, (255, 255, 255)),
+                    (5, (screen.get_height() / 2) + 30 + m * 40))
+        m += 1
+
+    grid.nextline += 1
+    if 700 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 600 and 500 > pygame.mouse.get_pos()[1] and \
+                    pygame.mouse.get_pos()[1] > 450:
+        pygame.draw.rect(screen, bright_green, (600, 450, 100, 50))
+    else:
+        pygame.draw.rect(screen, green, (600, 450, 100, 50))
+    smallText = pygame.font.Font("freesansbold.ttf", 20)
+    text = font.render("Reveal!", 1, (0, 0, 0))
+    screen.blit(text, (615, 465))
+
+    if 900 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 800 and 500 > pygame.mouse.get_pos()[1] and \
+                    pygame.mouse.get_pos()[1] > 450:
+        pygame.draw.rect(screen, bright_red, (800, 450, 100, 50))
+    else:
+        pygame.draw.rect(screen, red, (800, 450, 100, 50))
+    smallText = pygame.font.Font("freesansbold.ttf", 20)
+    text = font.render("Clear!", 1, (0, 0, 0))
+    screen.blit(text, (815, 465))
+
+    if 1000 > pygame.mouse.get_pos()[0] and pygame.mouse.get_pos()[0] > 900 and 600 > pygame.mouse.get_pos()[1] and \
+                    pygame.mouse.get_pos()[1] > 550:
+        pygame.draw.rect(screen, bright_red, (900, 550, 100, 50))
+    else:
+        pygame.draw.rect(screen, white, (900, 550, 100, 50))
+    smallText = pygame.font.Font("freesansbold.ttf", 20)
+    text = font.render("Solve!", 1, (0, 0, 0))
+    screen.blit(text, (915, 565))
+
+    if revealed is True:
+        smallText = pygame.font.Font("freesansbold.ttf", 20)
+        text = font.render("Revealed Puzzle!", 1, (0, 0, 0))
+        screen.blit(text, (1100, 370))
+
+        startx = 1100
+        starty = 400
+        i = 0
+        a = 0
+        nn = 0
+        for element in grid.Answers:
+            tile = grid.Tiles[nn].find("rect")
+            nn += 1
+            if tile.get("fill") == "black":
+                pygame.draw.rect(screen, black, (float(startx + a * 50), float(starty), 50, 50), 0)
+            else:
+                pygame.draw.rect(screen, black, (float(startx + a * 50), float(starty), 50, 50), 1)
+            text = font.render(str(element), 1, (0, 0, 0))
+            screen.blit(text, (startx + a * 50 + 20, starty + 20))
+            i += 1
+            a += 1
+            if a == 5:
+                a = 0
+                starty += 50
+        startx = 1100
+        starty = 400
+        a = 0
+        for nn in range(0, grid.Tiles.__len__(), 1):
+            for number in grid.Tiles[nn].findAll("text", {"text-anchor": "start"}):
+                text = font.render(number.text, 1, (0, 0, 0))
+                screen.blit(text, (float(startx + a * 50 + 5), float(starty + 5)))
+            a += 1
+            if a == 5:
+                a = 0
+                starty += 50
+
+    startx = 520
+    starty = 5
+    lastLabel = 0
+    text = font.render(Titles[0], 1, (0, 0, 0))
+    screen.blit(text, (startx, starty))
+    text = font.render(Titles[1], 1, (0, 0, 0))
+    screen.blit(text, (startx + 700, starty))
+
+    starty = 55
+    i = 0
+    a = 0
+    for element in Labels:
+        if lastLabel < element:
+            text = font.render(str(Labels[i]), 1, (0, 0, 0))
+            screen.blit(text, (startx, starty + a * 50))
+            text = font.render(Clues[i], 1, (0, 0, 0))
+            screen.blit(text, (startx + 20, starty + a * 50))
+            i += 1
+            a += 1
+            lastLabel = element
+        else:
+            startx += 700
+            starty = 55
+            lastLabel = 0
+            a = 0
+            text = font.render(str(Labels[i]), 1, (0, 0, 0))
+            screen.blit(text, (startx, starty + a * 50))
+            text = font.render(Clues[i], 1, (0, 0, 0))
+            screen.blit(text, (startx + 20, starty + a * 50))
+            i += 1
+            a += 1
+            lastLabel = element
     for nn in range(0, grid.Tiles.__len__(), 1):
         tile = grid.Tiles[nn].find("rect")
         if tile.get("fill") == "black":
@@ -681,7 +778,7 @@ def solveRecursion(words, gridS, screen, revealed, level=0):
             #updateGameScreenGridChars(screen, revealed)
             return gridS
         else:
-            print 'sdfsdfs'
+            print 'GRID S', bestGrid.Words, finalBestGrid.Words
             return None
 
     for word in words[level].keys():
@@ -719,17 +816,20 @@ def solveRecursion(words, gridS, screen, revealed, level=0):
                 if bestGrid.bestCount > biggestBestCount:
                     print 'new best found', biggestBestCount
                     biggestBestCount = bestGrid.bestCount
-                    bestGrid.Words = copy.deepcopy(gridS.Words)
-                    print 'GRID S', bestGrid.Words
+                    for m in range(0, 10):
+                        bestGrid.Words[i] = copy.deepcopy(gridS.Words[i])
+                    print 'GRID S2', bestGrid.Words, finalBestGrid.Words
                     finalBestGrid.Words = gridS.Words
                 #print 'NONE RETURNED'
                 #print 'BEFORE: ', gridS.Words
-                words[level][word] = 1
+                words[level][word] = words[level].get(words[level][word])
                 gridS.reverseState(word)
                 #print 'AFTER: ', gridS.Words
             for i in range(blackCount, 5):
                 if len(colWords[i]) != 0:
                     colWords[i] = colWords[i][:-1]
+
+
     return None
 
 

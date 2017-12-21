@@ -459,6 +459,7 @@ def SolvePuzzle(screen,revealed):
     count = 0
     reversed_wrods_list = [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}]
     insertValue = 0
+    addCurrentProcess(screen, revealed, "Accessing to api.datamuse.com/words")
     for j in range(0, 10):
         # Get from reverse dictionary
         URL = "http://api.datamuse.com/words"
@@ -477,10 +478,10 @@ def SolvePuzzle(screen,revealed):
                     reversed_wrods_list[j][str(value).upper()] = insertValue
                     print key, 'is:', value
 
-    addCurrentProcess(screen, revealed, "Discarding stop words from database")
     reversed_wrods_list[2]['METOO'] = 28933
     reversed_wrods_list[3]['PRESS'] = 23890
     reversed_wrods_list[6]['MUTES'] = 1
+    addCurrentProcess(screen, revealed, "The list is getting sorted")
     from collections import OrderedDict
     for i in range(0, 10):
         sList = sorted(reversed_wrods_list[i].items(), key=operator.itemgetter(1), reverse=True)
@@ -497,7 +498,7 @@ def SolvePuzzle(screen,revealed):
     else:
         # CURRENT PROCESS: Could not find a valid solution
         print 'BEST WORDS: ', bestList
-        addCurrentProcess(screen, revealed, "Could not find a valid solution")
+        addCurrentProcess(screen, revealed, "Could not find a valid solution, printing the best solution I got")
 
         a = 0
         tempChars =[]
@@ -515,11 +516,12 @@ def SolvePuzzle(screen,revealed):
         print 'Could not find a valid solution!'
     print "END OF REVERSED DICTIONARY"
     return
+    '''
     relationDegree = 0
     gw = ['A', 'THE', 'FOR', 'WITH', 'AS', 'BY', 'THIS', 'THAT', 'OF', 'TO', 'AN', '']
     from stop_words import get_stop_words
 
-    '''
+    
     # CURRENT PROCESS: Creating word database
     addCurrentProcess(screen, revealed, "Creating word database")
     garbage_words = get_stop_words('en')
